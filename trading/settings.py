@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'usuarios',
+    'cuentas',
 ]
 
 # VARIABLES PARA USO DE CRISPY-BOOTSTRAP5
