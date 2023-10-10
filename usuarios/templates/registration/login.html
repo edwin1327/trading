@@ -9,6 +9,7 @@
     <title>Acceso Aplicación</title>
 </head>
 <body>
+    {% load crispy_forms_tags %}
     <br>
     <br>
     <h1 class="position-absolute start-50 translate-middle">Aplicación de Trading Algoritmico</h1>
@@ -18,15 +19,10 @@
             <h5 class="card-title">Acceso a la aplicación</h5>
             <form action="" method="post">
                 {% csrf_token %}
-                <div class="mb-3">
-                  <label for="username" class="form-label">Usuario</label>
-                  <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp">
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input type="password" class="form-control" id="password" name="password">
-                </div>
+                
+                {{ form | crispy }}
                 <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                <a href={% url 'register' %} class="btn btn-success">Registrarse</a>
               </form>
             <div>
                 
