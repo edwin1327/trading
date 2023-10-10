@@ -137,3 +137,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # VARIABLES DE REDIRECCIÓN DE LOGIN Y LOGOUT
 LOGIN_REDIRECT_URL = 'home'
 # LOGOUT_REDIRECT_URL = 'home'
+
+# Definimos la carpeta Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# Definimos quien va a manejar los usuarios
+AUTH_USER_MODEL = 'usuarios.User'
