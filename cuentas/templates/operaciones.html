@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Información de la cuenta</h2>
+    {% if account_info_df %}
+        <!-- TODO: Eliminar línea cuando se termine de obtener todos los datos {{ account_info_df | safe }} -->
+        {{ account_info_df | safe }}
+        <p>Saldo de la cuenta: ${{ saldo }}</p>
+    {% else %}
+        <p>No se pudo obtener información de la cuenta.</p>
+    {% endif %}
+</div>
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Divisa</th>
+                <th>Timeframe</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for operacion in operaciones %}
+            <tr>
+                <td>{{ operacion.nombre_estrategia }}</td>
+                <td>{{ operacion.divisa }}</td>
+                <td>{{ operacion.timeframe }}</td>
+                <td>
+                    {% if operacion.estado %}
+                    <button type="button" class="btn btn-success">Activo</button>
+                    {% else %}
+                    <button type="button" class="btn btn-danger">Inactivo</button>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="#" class="btn btn-warning">Editar</a>
+                    <a href="#" class="btn btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="#" class="btn btn-primary">Agregar Estrategia</a>
+</div>
+{% endblock %}

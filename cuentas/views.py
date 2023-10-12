@@ -1,3 +1,5 @@
+import MetaTrader5 as mt5
+import pandas as pd
 from django.shortcuts import render, redirect
 from .forms import AgregarCuentaForm
 from .models import Cuenta, Estrategia
@@ -33,3 +35,43 @@ def estrategias(request):
     return render(request, 'estrategias.html', {'estrategias': estrategias})
 
 # ====================== Lista de estrategias Trading disponibles =================
+
+def operar_metatrader(request):
+    try:
+        datos_conexion = Cuenta.objects.get(id=1)  # TODO: configurar el filtro de conexión en el get
+        conexion_mt5 = {
+            'path': 'C:\\Program Files\\RoboForex - MetaTrader 5\\terminal64.exe',
+            'login': datos_conexion.numero_cuenta,
+            'password': datos_conexion.pass_server,
+            'server': datos_conexion.server,
+            'timeout': 60000,
+            'portable': False
+        }
+
+        if mt5.initialize(path=conexion_mt5['path'], login=conexion_mt5['login'], password=conexion_mt5['password'], server=conexion_mt5['server'], timeout=conexion_mt5['timeout'], portable=conexion_mt5['portable']):
+            print("Conexión exitosa a plataforma MT5")
+
+            # Obtener información de la cuenta
+            account_info_dict = mt5.account_info()._asdict()
+            account_info_df = pd.DataFrame(account_info_dict, index=[0])
+
+            # Obtener el saldo de la cuenta
+            saldo = account_info_dict.get('balance', 0)  # Obtener el saldo, 0 si no se encuentra
+
+            # Agregar el saldo y el DataFrame al contexto
+            context = {
+                'account_info_df': account_info_df.to_html(classes='table table-bordered table-hover'),
+                'saldo': saldo,
+            }
+        else:
+            print(f"Ha ocurrido un problema en la iniciación: {mt5.last_error()}")
+
+        return render(request, 'operaciones.html', context)
+    except Cuenta.DoesNotExist:
+        mensaje = "No se encontraron datos de conexión en la base de datos."
+        print(mensaje)
+    except Exception as e:
+        mensaje = f"Error al abrir MetaTrader5: {str(e)}"
+        print(mensaje)
+
+    return render(request, 'operaciones.html', {'mensaje': mensaje})
