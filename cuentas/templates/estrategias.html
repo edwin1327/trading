@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Estrategias de Trading</h1>
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre Estrategia</th>
+                <th>Tipo de Estrategia</th>
+                <th>Descripción de Estrategia</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estrategia in estrategias %}
+                <tr>
+                    <td>{{ estrategia.nombre }}</td>
+                    <td>{{ estrategia.tipo }}</td>
+                    <td>{{ estrategia.descripcion }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No hay estrategias disponibles.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

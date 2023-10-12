@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import AgregarCuentaForm
-from .models import Cuenta  # Importa el modelo de Cuenta
+from .models import Cuenta, Estrategia
 from django.contrib.auth.decorators import login_required
 
 # ====================== Lista de Cuentas Trading del Usuario =================
@@ -24,3 +24,9 @@ def crear_cuenta(request):
     else:
         form = AgregarCuentaForm()
     return render(request, 'crear_cuenta.html', {'form': form})
+
+# ====================== Lista de estrategias Trading disponibles =================
+
+def estrategias(request):
+    estrategias = Estrategia.objects.all()
+    return render(request, 'estrategias.html', {'estrategias': estrategias})

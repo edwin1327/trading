@@ -11,3 +11,11 @@ class Cuenta(models.Model):
 
     def __str__(self):
         return self.user.username  # Representación legible en el administrador de Django
+    
+class Estrategia(models.Model):
+    nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=50)
+    descripcion = models.TextField()
+
+    def __str__(self):
+        return self.nombre
