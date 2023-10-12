@@ -27,6 +27,9 @@ def crear_cuenta(request):
 
 # ====================== Lista de estrategias Trading disponibles =================
 
+@login_required
 def estrategias(request):
     estrategias = Estrategia.objects.all()
     return render(request, 'estrategias.html', {'estrategias': estrategias})
+
+# ====================== Lista de estrategias Trading disponibles =================
