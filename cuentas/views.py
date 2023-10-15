@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 import pandas as pd
 from django.shortcuts import render, redirect
-from .forms import AgregarCuentaForm
+from .forms import AgregarCuentaForm, AgregarEstrategiaForm
 from .models import Cuenta, Estrategia
 from django.contrib.auth.decorators import login_required
 
@@ -36,9 +36,11 @@ def estrategias(request):
 
 # ====================== Lista de estrategias Trading disponibles =================
 
-def operar_metatrader(request):
+def operar_metatrader(request, cuenta_id):
     try:
-        datos_conexion = Cuenta.objects.get(id=1)  # TODO: configurar el filtro de conexión en el get
+        request.session['cuenta_id'] = cuenta_id
+        # Obtén la cuenta basada en el cuenta_id
+        datos_conexion = Cuenta.objects.get(id=cuenta_id)
         conexion_mt5 = {
             'path': 'C:\\Program Files\\RoboForex - MetaTrader 5\\terminal64.exe',
             'login': datos_conexion.numero_cuenta,
@@ -63,6 +65,7 @@ def operar_metatrader(request):
                 'account_info_df': account_info_df.to_html(classes='table table-bordered table-hover'),
                 'saldo': saldo,
             }
+
         else:
             print(f"Ha ocurrido un problema en la iniciación: {mt5.last_error()}")
 
@@ -74,4 +77,22 @@ def operar_metatrader(request):
         mensaje = f"Error al abrir MetaTrader5: {str(e)}"
         print(mensaje)
 
-    return render(request, 'operaciones.html', {'mensaje': mensaje})
+    return render(request, 'operaciones.html', {'mensaje': mensaje}, cuenta_id)
+
+# ======================= Formulario agregar estrategia de Trading ====================
+
+@login_required
+def crear_estrategia(request):
+    if request.method == 'POST':
+        form = AgregarEstrategiaForm(request.POST)
+        if form.is_valid():
+            nueva_estrategia = form.save(commit=False)
+            # Recupera cuenta_id de la sesión
+            cuenta_id = request.session.get('cuenta_id')
+            # Asigna el valor de cuenta_id
+            nueva_estrategia.id_cuenta_id = cuenta_id  # Asigna la cuenta correspondiente
+            nueva_estrategia.save()
+            return redirect('operar_metatrader', cuenta_id=cuenta_id)  # Redirige a la página de operaciones
+    else:
+        form = AgregarEstrategiaForm()
+    return render(request, 'crear_estrategia.html', {'form': form})

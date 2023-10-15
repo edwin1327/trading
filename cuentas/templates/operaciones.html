@@ -23,13 +23,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for operacion in operaciones %}
+            {% for estrategia_usuario in estrategias_usuario %}
             <tr>
-                <td>{{ operacion.nombre_estrategia }}</td>
-                <td>{{ operacion.divisa }}</td>
-                <td>{{ operacion.timeframe }}</td>
+                <td>{{ estrategia_usuario.nombre_estrategia }}</td>
+                <td>{{ estrategia_usuario.divisa }}</td>
+                <td>{{ estrategia_usuario.timeframe }}</td>
                 <td>
-                    {% if operacion.estado %}
+                    {% if estrategia_usuario.estado %}
                     <button type="button" class="btn btn-success">Activo</button>
                     {% else %}
                     <button type="button" class="btn btn-danger">Inactivo</button>
@@ -43,6 +43,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="#" class="btn btn-primary">Agregar Estrategia</a>
+    <a href="{% url 'crear_estrategia' %}" class="btn btn-primary">Agregar Estrategia</a>
 </div>
 {% endblock %}

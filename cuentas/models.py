@@ -10,7 +10,12 @@ class Cuenta(models.Model):
     server = models.CharField(max_length=20, blank=False, null=False)
 
     def __str__(self):
-        return self.user.username  # Representación legible en el administrador de Django
+        return {
+            'user_id': self.user.id,
+            'username': self.user.username,
+            'id': self.id,
+            'name_broker': self.name_broker,
+        }
     
 class Estrategia(models.Model):
     nombre = models.CharField(max_length=100)
@@ -19,3 +24,37 @@ class Estrategia(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+
+class Crear_Estrategia(models.Model):
+    ONEMINUTE = "1M"
+    FIVEMINUTES = "5M"
+    FIFTEENMINUTES = "15M"
+    THIRTYMINUTES = "30M"
+    ONEHOUR = "1H"
+    FOURHOURS = "4H"
+    ONEDAY = "1D"
+    TIMEFRAME_STRATEGY = [
+        (ONEMINUTE, "1 Minuto"),
+        (FIVEMINUTES, "5 Minutos"),
+        (FIFTEENMINUTES, "15 Minutos"),
+        (THIRTYMINUTES, "30 Minutos"),
+        (ONEHOUR, "1 Hora"),
+        (FOURHOURS, "4 Horas"),
+        (ONEDAY, "1 Día"),
+    ]
+
+    id_cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE) # Relación con la cuenta Activa
+    nombre_estrategia = models.CharField(max_length=50)
+    id_estrategia = models.ForeignKey(Estrategia, on_delete=models.CASCADE)
+    divisa = models.CharField(max_length=10, blank=False, null=False)
+    timeframe = models.CharField(max_length=3, blank=False, null=False, choices=TIMEFRAME_STRATEGY, default=ONEDAY)
+    estado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return {
+            'nombre_estrategia': self.nombre_estrategia,
+            'id_estrategia': self.id_estrategia,
+            'divisa': self.divisa,
+            'timeframe': self.timeframe
+        }
