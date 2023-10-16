@@ -2,7 +2,7 @@ import MetaTrader5 as mt5
 import pandas as pd
 from django.shortcuts import render, redirect
 from .forms import AgregarCuentaForm, AgregarEstrategiaForm
-from .models import Cuenta, Estrategia
+from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
 
 # ====================== Lista de Cuentas Trading del Usuario =================
@@ -60,10 +60,15 @@ def operar_metatrader(request, cuenta_id):
             # Obtener el saldo de la cuenta
             saldo = account_info_dict.get('balance', 0)  # Obtener el saldo, 0 si no se encuentra
 
+            # Obtener estrategias asociadas a la cuenta actual
+            estrategias_usuario = Crear_Estrategia.objects.filter(id_cuenta_id=cuenta_id)
+
+
             # Agregar el saldo y el DataFrame al contexto
             context = {
                 'account_info_df': account_info_df.to_html(classes='table table-bordered table-hover'),
                 'saldo': saldo,
+                'estrategias_usuario': estrategias_usuario,
             }
 
         else:
