@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">     
+                    <h2>Vas a eliminar la siguiente cuenta</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <ul>
+                            <li><strong>Broker:</strong> {{ cuenta.name_broker }}</li>
+                            <li><strong>Servidor:</strong> {{ cuenta.server }}</li>
+                            <li><strong>Número de Cuenta:</strong> {{ cuenta.numero_cuenta }}</li>
+                        </ul>
+                        <p>¿Estás seguro de eliminar este registro?</p>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                        <a href="{% url 'cuentas_usuario' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

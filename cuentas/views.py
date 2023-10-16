@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 import pandas as pd
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AgregarCuentaForm, AgregarEstrategiaForm
 from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
@@ -26,6 +26,19 @@ def crear_cuenta(request):
     else:
         form = AgregarCuentaForm()
     return render(request, 'crear_cuenta.html', {'form': form})
+
+# ====================== Eliminar Cuentas Trading del Usuario =================
+
+@login_required
+def eliminar_cuenta(request, cuenta_id):
+    cuenta = get_object_or_404(Cuenta, id=cuenta_id)
+
+    if request.method == 'POST':
+        # Elimina la cuenta
+        cuenta.delete()
+        return redirect('cuentas_usuario')
+
+    return render(request, 'eliminar_cuenta.html', {'cuenta': cuenta})
 
 # ====================== Lista de estrategias Trading disponibles =================
 

@@ -22,7 +22,8 @@
                     <td>
                         <a href="{% url 'operar_metatrader' cuenta_id=cuenta.id %}" class="btn btn-sm btn-primary">Operar</a> |
                         <a href="#" class="btn btn-sm btn-warning">Editar</a> |
-                        <a href="#" class="btn btn-sm btn-danger">Eliminar</a>
+                        <a href="{% url 'eliminar_cuenta' cuenta_id=cuenta.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+
                     </td>
                 </tr>
             {% empty %}
@@ -34,5 +35,6 @@
     </table>
     <a href="{% url 'crear_cuenta' %}" class="btn btn-success">Agregar Cuenta</a>
 </div>
+
 
 {% endblock %}
