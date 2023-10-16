@@ -11,3 +11,9 @@ class AgregarEstrategiaForm(forms.ModelForm):
     class Meta:
         model = Crear_Estrategia
         fields = ['nombre_estrategia', 'id_estrategia', 'divisa', 'timeframe']
+
+
+class EditarCuentaForm(forms.ModelForm):
+    class Meta:
+        model = Cuenta
+        fields = ['name_broker', 'numero_cuenta', 'pass_server', 'server']  # Lista de campos que deseas editar

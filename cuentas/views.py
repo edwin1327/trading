@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import AgregarCuentaForm, AgregarEstrategiaForm
+from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
 from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
 
@@ -26,6 +26,23 @@ def crear_cuenta(request):
     else:
         form = AgregarCuentaForm()
     return render(request, 'crear_cuenta.html', {'form': form})
+
+# ====================== Editar Cuentas Trading del Usuario =================
+
+@login_required
+def editar_cuenta(request, cuenta_id):
+    cuenta = get_object_or_404(Cuenta, id=cuenta_id)
+
+    if request.method == 'POST':
+        form = EditarCuentaForm(request.POST, instance=cuenta)
+        if form.is_valid():
+            form.save()
+            return redirect('cuentas_usuario')
+
+    else:
+        form = EditarCuentaForm(instance=cuenta)
+
+    return render(request, 'editar_cuenta.html', {'form': form, 'cuenta': cuenta})
 
 # ====================== Eliminar Cuentas Trading del Usuario =================
 
