@@ -19,7 +19,7 @@ class Estrategia(models.Model):
     codigo_python = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.nombre
+        return str(self.id) + " " + self.nombre
     
 
 class Crear_Estrategia(models.Model):
@@ -46,6 +46,7 @@ class Crear_Estrategia(models.Model):
     divisa = models.CharField(max_length=10, blank=False, null=False)
     timeframe = models.CharField(max_length=3, blank=False, null=False, choices=TIMEFRAME_STRATEGY, default=ONEDAY)
     estado = models.BooleanField(default=False)
+    ultima_ejecucion = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.nombre_estrategia

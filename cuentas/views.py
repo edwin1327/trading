@@ -6,6 +6,9 @@ from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+import schedule
+import time
+from django.utils import timezone
 
 # ====================== Lista de Cuentas Trading del Usuario =================
 @login_required
@@ -134,7 +137,7 @@ def crear_estrategia(request):
         form = AgregarEstrategiaForm()
     return render(request, 'crear_estrategia.html', {'form': form})
 
-# ======================= Formulario agregar estrategia de Trading ====================
+# ======================= Cambiar estado de estrategia de Trading ====================
 
 @csrf_exempt
 def cambiar_estado_estrategia(request):
@@ -149,3 +152,57 @@ def cambiar_estado_estrategia(request):
             return JsonResponse({'error': 'Estrategia no encontrada'}, status=400)
     else:
         return JsonResponse({'error': 'Solicitud no válida'}, status=400)
+
+# ======================= Ejecutar estrategia de Trading ====================
+
+
+def ejecutar_codigo_python(request, estrategia_id):
+    estrategia_usuario = Crear_Estrategia.objects.get(id=estrategia_id)
+    estrategia = estrategia_usuario.id_estrategia
+    # Define un diccionario para el entorno
+    context = {}
+    # Asegúrate de que el estado sea activo antes de ejecutar el código
+    if estrategia_usuario.estado:
+        try:
+            # Definir los argumentos que se pasarán a la función
+            divisa = estrategia_usuario.divisa
+            timeframe = estrategia_usuario.timeframe
+            # Ejecuta el código Python almacenado en el campo codigo_python
+            exec(estrategia.codigo_python, context)
+
+            # Llama a la función con los argumentos
+            context['implementar_estrategia'](divisa, timeframe)
+            mensaje = "Código ejecutado exitosamente."
+        except Exception as e:
+            mensaje = f"Error al ejecutar el código: {str(e)}"
+    else:
+        mensaje = "La estrategia está inactiva."
+
+    return JsonResponse({'mensaje': mensaje})
+
+'''
+def ejecutar_estrategia(estrategia_id):
+    estrategia = Estrategia.objects.get(id=estrategia_id)
+    if estrategia:
+        simbolo = estrategia.id_cuenta.numero_cuenta  # Asegúrate de obtener el símbolo adecuado aquí
+        timeframe = estrategia.timeframe
+        estrategia_custom(simbolo, timeframe)
+        estrategia.ultima_ejecucion = timezone.now()
+        estrategia.save()
+
+# Configura una tarea periódica para ejecutar estrategias activas
+def programar_estrategias():
+    estrategias_activas = Crear_Estrategia.objects.filter(estado=True)
+    for estrategia in estrategias_activas:
+        # El tiempo entre ejecuciones debe coincidir con el timeframe definido en minutos
+        intervalo = 5 if estrategia.timeframe == "5M" else 15 if estrategia.timeframe == "15M" else 60 if estrategia.timeframe == "1H" else 240 if estrategia.timeframe == "4H" else 1440 if estrategia.timeframe == "1D" else 1
+
+        schedule.every(intervalo).minutes.do(ejecutar_estrategia, estrategia.id)
+
+# Inicia la planificación de tareas en segundo plano
+programar_estrategias()
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+
+    '''

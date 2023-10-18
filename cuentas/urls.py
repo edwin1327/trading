@@ -11,4 +11,5 @@ urlpatterns = [
     path('operar-metatrader/<int:cuenta_id>/', views.operar_metatrader, name='operar_metatrader'),
     path('crear_estrategia/', views.crear_estrategia, name='crear_estrategia'),
     path('cambiar_estado_estrategia/', views.cambiar_estado_estrategia, name='cambiar_estado_estrategia'),
+    path('ejecutar_codigo_python/<int:estrategia_id>/', views.ejecutar_codigo_python, name='ejecutar_codigo_python'),
 ]

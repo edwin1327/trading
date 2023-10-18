@@ -34,10 +34,11 @@
                     <td>
                         <td>
                             {% if estrategia_usuario.estado %}
-                                <button type="checkbox" class="form-check-input toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
+                                <button type="checkbox" class="btn btn-success toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
                             {% else %}
                                 <button type="button" class="btn btn-danger toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Inactivo</button>
                             {% endif %}
+                                <button type="button" class="btn btn-primary ejecutar-codigo" data-estrategia-id="{{ estrategia_usuario.id }}">Ejecutar Código</button>
                         </td>
                         
                         
@@ -76,9 +77,22 @@
                     // Cambia el estado en la interfaz según la respuesta
                     if (response.estado === true) {
                         button.text('Activo').removeClass('btn-danger').addClass('btn-success');
+                        
                     } else {
                         button.text('Inactivo').removeClass('btn-success').addClass('btn-danger');
                     }
+                }
+            });
+        });
+        $('.ejecutar-codigo').on('click', function() {
+            var estrategiaId = $(this).data('estrategia-id');
+            
+            // Hacer una solicitud AJAX para ejecutar el código Python
+            $.ajax({
+                url: "{% url 'ejecutar_codigo_python' estrategia_id=0 %}".replace('0', estrategiaId),
+                method: "GET",
+                success: function(response) {
+                    alert(response.mensaje);  // Muestra el mensaje de ejecución
                 }
             });
         });
