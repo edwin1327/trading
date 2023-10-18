@@ -6,7 +6,7 @@
     <h2>Información de la cuenta</h2>
     {% if account_info_df %}
         <!-- TODO: Eliminar línea cuando se termine de obtener todos los datos {{ account_info_df | safe }} -->
-        {{ account_info_df | safe }}
+        <!-- {{ account_info_df | safe }} -->
         <p>Saldo de la cuenta: ${{ saldo }}</p>
     {% else %}
         <p>No se pudo obtener información de la cuenta.</p>
@@ -22,7 +22,7 @@
                     <th>Divisa</th>
                     <th>Timeframe</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
+                    <th>Acciones <a href="{% url 'crear_estrategia' %}" class="btn btn-sm btn-primary">Agregar Estrategia</a></th>
                 </tr>
             </thead>
             <tbody>
@@ -31,18 +31,13 @@
                     <td>{{ estrategia_usuario.nombre_estrategia }}</td>
                     <td>{{ estrategia_usuario.divisa }}</td>
                     <td>{{ estrategia_usuario.timeframe }}</td>
-                    <td>
                         <td>
                             {% if estrategia_usuario.estado %}
                                 <button type="checkbox" class="btn btn-success toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
                             {% else %}
                                 <button type="button" class="btn btn-danger toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Inactivo</button>
                             {% endif %}
-                                <button type="button" class="btn btn-primary ejecutar-codigo" data-estrategia-id="{{ estrategia_usuario.id }}">Ejecutar Código</button>
                         </td>
-                        
-                        
-                    </td>
                     <td>
                         <a href="#" class="btn btn-warning">Editar</a>
                         <a href="#" class="btn btn-danger">Eliminar</a>
@@ -51,13 +46,37 @@
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'crear_estrategia' %}" class="btn btn-primary">Agregar Estrategia</a>
     </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
+    function ejecutarCodigoPython(estrategiaId) {
+        $.ajax({
+            url: "{% url 'ejecutar_codigo_python' estrategia_id=0 %}".replace('0', estrategiaId),
+            method: "GET",
+            success: function(response) {
+                console.log(response.mensaje);  // Muestra el mensaje de ejecución
+            }
+        });
+    }
+
+    function ejecutarCodigoPythonEstrategiasActivas() {
+        // Obtener todas las estrategias con estado 'Activo'
+        var estrategiasActivas = $('.toggle-estado.btn-success');
+
+        estrategiasActivas.each(function() {
+            var button = $(this);
+            var estrategiaId = button.data('estrategia-id');
+            ejecutarCodigoPython(estrategiaId);
+        });
+    }
+
     $(document).ready(function() {
+
+        // Ejecutar el código de estrategias activas al cargar la página
+        ejecutarCodigoPythonEstrategiasActivas();
+
         $('.toggle-estado').on('click', function() {
             var button = $(this);  // Guarda una referencia al botón actual
             var estrategiaId = button.data('estrategia-id');
@@ -77,22 +96,11 @@
                     // Cambia el estado en la interfaz según la respuesta
                     if (response.estado === true) {
                         button.text('Activo').removeClass('btn-danger').addClass('btn-success');
-                        
+                        // Ejecutar el código Python
+                        ejecutarCodigoPython(estrategiaId);
                     } else {
                         button.text('Inactivo').removeClass('btn-success').addClass('btn-danger');
                     }
-                }
-            });
-        });
-        $('.ejecutar-codigo').on('click', function() {
-            var estrategiaId = $(this).data('estrategia-id');
-            
-            // Hacer una solicitud AJAX para ejecutar el código Python
-            $.ajax({
-                url: "{% url 'ejecutar_codigo_python' estrategia_id=0 %}".replace('0', estrategiaId),
-                method: "GET",
-                success: function(response) {
-                    alert(response.mensaje);  // Muestra el mensaje de ejecución
                 }
             });
         });

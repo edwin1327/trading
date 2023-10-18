@@ -155,7 +155,6 @@ def cambiar_estado_estrategia(request):
 
 # ======================= Ejecutar estrategia de Trading ====================
 
-
 def ejecutar_codigo_python(request, estrategia_id):
     estrategia_usuario = Crear_Estrategia.objects.get(id=estrategia_id)
     estrategia = estrategia_usuario.id_estrategia
@@ -179,30 +178,3 @@ def ejecutar_codigo_python(request, estrategia_id):
         mensaje = "La estrategia está inactiva."
 
     return JsonResponse({'mensaje': mensaje})
-
-'''
-def ejecutar_estrategia(estrategia_id):
-    estrategia = Estrategia.objects.get(id=estrategia_id)
-    if estrategia:
-        simbolo = estrategia.id_cuenta.numero_cuenta  # Asegúrate de obtener el símbolo adecuado aquí
-        timeframe = estrategia.timeframe
-        estrategia_custom(simbolo, timeframe)
-        estrategia.ultima_ejecucion = timezone.now()
-        estrategia.save()
-
-# Configura una tarea periódica para ejecutar estrategias activas
-def programar_estrategias():
-    estrategias_activas = Crear_Estrategia.objects.filter(estado=True)
-    for estrategia in estrategias_activas:
-        # El tiempo entre ejecuciones debe coincidir con el timeframe definido en minutos
-        intervalo = 5 if estrategia.timeframe == "5M" else 15 if estrategia.timeframe == "15M" else 60 if estrategia.timeframe == "1H" else 240 if estrategia.timeframe == "4H" else 1440 if estrategia.timeframe == "1D" else 1
-
-        schedule.every(intervalo).minutes.do(ejecutar_estrategia, estrategia.id)
-
-# Inicia la planificación de tareas en segundo plano
-programar_estrategias()
-while True:
-    schedule.run_pending()
-    time.sleep(1)
-
-    '''
