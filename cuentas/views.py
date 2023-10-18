@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
 from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # ====================== Lista de Cuentas Trading del Usuario =================
 @login_required
@@ -131,3 +133,19 @@ def crear_estrategia(request):
     else:
         form = AgregarEstrategiaForm()
     return render(request, 'crear_estrategia.html', {'form': form})
+
+# ======================= Formulario agregar estrategia de Trading ====================
+
+@csrf_exempt
+def cambiar_estado_estrategia(request):
+    if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        estrategia_id = request.POST.get('estrategia_id')
+        try:
+            estrategia = Crear_Estrategia.objects.get(id=estrategia_id)
+            estrategia.estado = not estrategia.estado  # Cambia el estado
+            estrategia.save()
+            return JsonResponse({'estado': estrategia.estado})
+        except Crear_Estrategia.DoesNotExist:
+            return JsonResponse({'error': 'Estrategia no encontrada'}, status=400)
+    else:
+        return JsonResponse({'error': 'Solicitud no válida'}, status=400)

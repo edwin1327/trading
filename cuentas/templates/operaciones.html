@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <div class="container">
     <h2>Información de la cuenta</h2>
     {% if account_info_df %}
@@ -12,37 +13,76 @@
     {% endif %}
 </div>
 <div class="container">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Divisa</th>
-                <th>Timeframe</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estrategia_usuario in estrategias_usuario %}
-            <tr>
-                <td>{{ estrategia_usuario.nombre_estrategia }}</td>
-                <td>{{ estrategia_usuario.divisa }}</td>
-                <td>{{ estrategia_usuario.timeframe }}</td>
-                <td>
-                    {% if estrategia_usuario.estado %}
-                    <button type="button" class="btn btn-success">Activo</button>
-                    {% else %}
-                    <button type="button" class="btn btn-danger">Inactivo</button>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="#" class="btn btn-warning">Editar</a>
-                    <a href="#" class="btn btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'crear_estrategia' %}" class="btn btn-primary">Agregar Estrategia</a>
+    <form method="post">
+        {% csrf_token %} {# Añade el token CSRF aquí #}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Divisa</th>
+                    <th>Timeframe</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estrategia_usuario in estrategias_usuario %}
+                <tr>
+                    <td>{{ estrategia_usuario.nombre_estrategia }}</td>
+                    <td>{{ estrategia_usuario.divisa }}</td>
+                    <td>{{ estrategia_usuario.timeframe }}</td>
+                    <td>
+                        <td>
+                            {% if estrategia_usuario.estado %}
+                                <button type="checkbox" class="form-check-input toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
+                            {% else %}
+                                <button type="button" class="btn btn-danger toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Inactivo</button>
+                            {% endif %}
+                        </td>
+                        
+                        
+                    </td>
+                    <td>
+                        <a href="#" class="btn btn-warning">Editar</a>
+                        <a href="#" class="btn btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'crear_estrategia' %}" class="btn btn-primary">Agregar Estrategia</a>
+    </form>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.toggle-estado').on('click', function() {
+            var button = $(this);  // Guarda una referencia al botón actual
+            var estrategiaId = button.data('estrategia-id');
+            
+            // Obtener el token CSRF
+            var csrfToken = $("[name=csrfmiddlewaretoken]").val();
+
+            // Hacer una solicitud AJAX para cambiar el estado
+            $.ajax({
+                url: "{% url 'cambiar_estado_estrategia' %}",
+                method: "POST",
+                data: {
+                    'estrategia_id': estrategiaId,
+                    'csrfmiddlewaretoken': csrfToken  // Agregar el token CSRF aquí
+                },
+                success: function(response) {
+                    // Cambia el estado en la interfaz según la respuesta
+                    if (response.estado === true) {
+                        button.text('Activo').removeClass('btn-danger').addClass('btn-success');
+                    } else {
+                        button.text('Inactivo').removeClass('btn-success').addClass('btn-danger');
+                    }
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}

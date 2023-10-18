@@ -10,17 +10,13 @@ class Cuenta(models.Model):
     server = models.CharField(max_length=20, blank=False, null=False)
 
     def __str__(self):
-        return {
-            'user_id': self.user.id,
-            'username': self.user.username,
-            'id': self.id,
-            'name_broker': self.name_broker,
-        }
+        return self.name_broker
     
 class Estrategia(models.Model):
     nombre = models.CharField(max_length=100)
     tipo = models.CharField(max_length=50)
     descripcion = models.TextField()
+    codigo_python = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.nombre
@@ -52,9 +48,5 @@ class Crear_Estrategia(models.Model):
     estado = models.BooleanField(default=False)
 
     def __str__(self):
-        return {
-            'nombre_estrategia': self.nombre_estrategia,
-            'id_estrategia': self.id_estrategia,
-            'divisa': self.divisa,
-            'timeframe': self.timeframe
-        }
+        return self.nombre_estrategia
+
