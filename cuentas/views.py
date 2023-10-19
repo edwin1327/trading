@@ -6,9 +6,6 @@ from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-import schedule
-import time
-from django.utils import timezone
 
 # ====================== Lista de Cuentas Trading del Usuario =================
 @login_required
@@ -178,3 +175,4 @@ def ejecutar_codigo_python(request, estrategia_id):
         mensaje = "La estrategia está inactiva."
 
     return JsonResponse({'mensaje': mensaje})
+
