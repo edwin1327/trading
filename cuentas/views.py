@@ -1,11 +1,25 @@
 import MetaTrader5 as mt5
 import pandas as pd
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
-from .models import Cuenta, Estrategia, Crear_Estrategia
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.utils import timezone
+from threading import Thread
+from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
+from .models import Cuenta, Estrategia, Crear_Estrategia
+import schedule, pytz, time
+from collections import defaultdict
+from functools import partial
+
+# ============== Entornos Globales ==================================
+# Diccionario para realizar un seguimiento de las tareas programadas
+tareas_programadas = defaultdict(set)
+
+# Objeto datetime con información de zona horaria
+timezone = pytz.timezone("UTC")
+now = datetime.now(timezone)
 
 # ====================== Lista de Cuentas Trading del Usuario =================
 @login_required
@@ -142,8 +156,14 @@ def cambiar_estado_estrategia(request):
         estrategia_id = request.POST.get('estrategia_id')
         try:
             estrategia = Crear_Estrategia.objects.get(id=estrategia_id)
+            #estado_anterior = estrategia.estado
             estrategia.estado = not estrategia.estado  # Cambia el estado
             estrategia.save()
+
+            # Si el estado cambió a "Inactivo," detener la tarea programada
+            #if estado_anterior and not estrategia.estado:
+            #    detener_tarea_programada(estrategia_id)
+
             return JsonResponse({'estado': estrategia.estado})
         except Crear_Estrategia.DoesNotExist:
             return JsonResponse({'error': 'Estrategia no encontrada'}, status=400)
@@ -157,7 +177,7 @@ def ejecutar_codigo_python(request, estrategia_id):
     estrategia = estrategia_usuario.id_estrategia
     # Define un diccionario para el entorno
     context = {}
-    # Asegúrate de que el estado sea activo antes de ejecutar el código
+    # El estado debe estar activo antes de ejecutar el código
     if estrategia_usuario.estado:
         try:
             # Definir los argumentos que se pasarán a la función
@@ -169,6 +189,36 @@ def ejecutar_codigo_python(request, estrategia_id):
             # Llama a la función con los argumentos
             context['implementar_estrategia'](divisa, timeframe)
             mensaje = "Código ejecutado exitosamente."
+
+            # Calcular el tiempo de espera antes de la próxima ejecución
+            intervalo = 60  # Predeterminado a 1 minuto
+            if estrategia_usuario.timeframe == '5M':
+                intervalo = 300  # 5 minutos
+            elif estrategia_usuario.timeframe == '15M':
+                intervalo = 900  # 15 minutos
+            elif estrategia_usuario.timeframe == '30M':
+                intervalo = 1800  # 30 minutos
+            elif estrategia_usuario.timeframe == '1H':
+                intervalo = 3600  # 1 hora
+            elif estrategia_usuario.timeframe == '4H':
+                intervalo = 14400  # 4 horas
+            elif estrategia_usuario.timeframe == '1D':
+                intervalo = 86400  # 1 día
+
+            # Define una función parcial que fija el parámetro request
+            partial_ejecutar_codigo_python = partial(ejecutar_codigo_python, request)
+
+            # Programar la próxima ejecución
+            tarea = schedule.every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_usuario.id)
+            tareas_programadas[estrategia_usuario.id].add(tarea)
+            
+            # Inicia el hilo para ejecutar tareas programadas en segundo plano
+            t = Thread(target=ejecutar_tareas_programadas)
+            t.daemon = True
+            t.start()
+
+            estrategia_usuario.ultima_ejecucion = datetime.now(timezone)
+            estrategia_usuario.save()
         except Exception as e:
             mensaje = f"Error al ejecutar el código: {str(e)}"
     else:
@@ -176,3 +226,23 @@ def ejecutar_codigo_python(request, estrategia_id):
 
     return JsonResponse({'mensaje': mensaje})
 
+
+
+# ======================= Funciones tareas segundo plano ====================
+   
+# Función para ejecutar tareas programadas
+def ejecutar_tareas_programadas():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)  # Espera 1 segundo antes de verificar nuevamente las tareas
+        
+
+''' 
+# Función para detener una tarea programada
+def detener_tarea_programada(estrategia_id):
+    if estrategia_id in tareas_programadas:
+        tarea = tareas_programadas[estrategia_id]
+        tarea.cancel()
+        del tareas_programadas[estrategia_id]
+
+'''
