@@ -9,13 +9,14 @@ from django.utils import timezone
 from threading import Thread
 from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
 from .models import Cuenta, Estrategia, Crear_Estrategia
-import schedule, pytz, time
+from schedule import every, run_pending, cancel_job
+import pytz, time
 from collections import defaultdict
 from functools import partial
 
 # ============== Entornos Globales ==================================
 # Diccionario para realizar un seguimiento de las tareas programadas
-tareas_programadas = defaultdict(set)
+tareas_programadas = {}
 
 # Objeto datetime con información de zona horaria
 timezone = pytz.timezone("UTC")
@@ -156,13 +157,17 @@ def cambiar_estado_estrategia(request):
         estrategia_id = request.POST.get('estrategia_id')
         try:
             estrategia = Crear_Estrategia.objects.get(id=estrategia_id)
-            #estado_anterior = estrategia.estado
+            estado_anterior = estrategia.estado
             estrategia.estado = not estrategia.estado  # Cambia el estado
             estrategia.save()
 
             # Si el estado cambió a "Inactivo," detener la tarea programada
-            #if estado_anterior and not estrategia.estado:
-            #    detener_tarea_programada(estrategia_id)
+            if estado_anterior and not estrategia.estado:
+                detener_tarea_programada(estrategia_id)
+            else:
+                # Define una función parcial que fija el parámetro request
+                partial_ejecutar_codigo_python = partial(ejecutar_codigo_python, request)
+                ejecutar_codigo_python(partial_ejecutar_codigo_python, estrategia_id)
 
             return JsonResponse({'estado': estrategia.estado})
         except Crear_Estrategia.DoesNotExist:
@@ -209,8 +214,13 @@ def ejecutar_codigo_python(request, estrategia_id):
             partial_ejecutar_codigo_python = partial(ejecutar_codigo_python, request)
 
             # Programar la próxima ejecución
-            tarea = schedule.every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_usuario.id)
-            tareas_programadas[estrategia_usuario.id].add(tarea)
+            estrategia_id = estrategia_usuario.id
+            tarea = every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_id)
+            tareas_programadas[estrategia_id] = tarea
+            cantidad = 0
+            for tarea in tareas_programadas:
+                cantidad += 1
+                print(f"{cantidad}. Tarea: {tarea}")
             
             # Inicia el hilo para ejecutar tareas programadas en segundo plano
             t = Thread(target=ejecutar_tareas_programadas)
@@ -233,16 +243,18 @@ def ejecutar_codigo_python(request, estrategia_id):
 # Función para ejecutar tareas programadas
 def ejecutar_tareas_programadas():
     while True:
-        schedule.run_pending()
-        time.sleep(1)  # Espera 1 segundo antes de verificar nuevamente las tareas
+        run_pending()
+        time.sleep(60)  # Espera 60 segundos antes de verificar nuevamente las tareas
         
 
-''' 
 # Función para detener una tarea programada
 def detener_tarea_programada(estrategia_id):
+    estrategia_id = int(estrategia_id)
     if estrategia_id in tareas_programadas:
-        tarea = tareas_programadas[estrategia_id]
-        tarea.cancel()
+        cancelar_tarea = tareas_programadas[estrategia_id]
+        #primera_tarea = conjunto_de_tareas.pop()  # Remueve y obtiene la primera tarea
+        cancel_job(cancelar_tarea)
         del tareas_programadas[estrategia_id]
-
-'''
+        print(f"Tarea programada para {estrategia_id} fue cancelada y eliminada")
+    else:
+        print(f"No se encontró tarea programada para {estrategia_id}")
