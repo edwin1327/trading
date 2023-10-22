@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
 from threading import Thread
-from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm
+from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm, EditarEstrategiaForm
 from .models import Cuenta, Estrategia, Crear_Estrategia
 from schedule import every, run_pending, cancel_job
 import pytz, time
@@ -148,6 +148,23 @@ def crear_estrategia(request):
     else:
         form = AgregarEstrategiaForm()
     return render(request, 'crear_estrategia.html', {'form': form})
+
+# ======================= Formulario editar estrategia de Trading ====================
+
+def editar_estrategia(request, estrategia_id):
+    estrategia = Crear_Estrategia.objects.get(id=estrategia_id)
+    if request.method == 'POST':
+        form = EditarEstrategiaForm(request.POST, instance=estrategia)
+        if form.is_valid():
+            # Recupera cuenta_id de la sesión
+            cuenta_id = request.session.get('cuenta_id')
+            form.save()
+            return redirect('operar_metatrader', cuenta_id=cuenta_id)  # Redirige de nuevo a la página de operaciones o ajusta el nombre de la URL
+
+    else:
+        form = EditarEstrategiaForm(instance=estrategia)
+
+    return render(request, 'editar_estrategia.html', {'form': form, 'estrategia': estrategia})
 
 # ======================= Cambiar estado de estrategia de Trading ====================
 
