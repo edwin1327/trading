@@ -1,0 +1,10 @@
+<div class="container">
+    <h2>Información de la cuenta</h2>
+    {% if account_info_df %}
+        <!-- TODO: Eliminar línea cuando se termine de obtener todos los datos {{ account_info_df | safe }} -->
+        <!-- {{ account_info_df | safe }} -->
+        <p>Saldo de la cuenta: ${{ saldo }}</p>
+    {% else %}
+        <p>No se pudo obtener información de la cuenta.</p>
+    {% endif %}
+</div>

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">     
+                    <h2>Vas a eliminar la siguiente Estrategia</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <ul>
+                            <li><strong>Nombre Estrategia:</strong> {{ estrategia.nombre_estrategia }}</li>
+                            <li><strong>Estrategia:</strong> {{ estrategia.id_estrategia }}</li>
+                            <li><strong>Divisa:</strong> {{ estrategia.divisa }}</li>
+                            <li><strong>Divisa:</strong> {{ estrategia.timeframe }}</li>
+                        </ul>
+                        <p>¿Estás seguro de eliminar este registro?</p>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                        <a href="{% url 'operar_metatrader' cuenta_id=estrategia.id_cuenta.id %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

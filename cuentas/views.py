@@ -166,6 +166,21 @@ def editar_estrategia(request, estrategia_id):
 
     return render(request, 'editar_estrategia.html', {'form': form, 'estrategia': estrategia})
 
+# ======================= Formulario eliminar estrategia de Trading ====================
+
+def eliminar_estrategia(request, estrategia_id):
+    estrategia = Crear_Estrategia.objects.get(id=estrategia_id)
+
+    if request.method == 'POST':
+        # Recupera cuenta_id de la sesión
+        cuenta_id = request.session.get('cuenta_id')
+        #Quitar de la lista la tarea si está programada
+        detener_tarea_programada(estrategia_id)
+        estrategia.delete()
+        return redirect('operar_metatrader', cuenta_id=cuenta_id)  # Redirige de nuevo a la página de operaciones o ajusta el nombre de la URL
+
+    return render(request, 'eliminar_estrategia.html', {'estrategia': estrategia})
+
 # ======================= Cambiar estado de estrategia de Trading ====================
 
 @csrf_exempt
@@ -235,10 +250,10 @@ def ejecutar_codigo_python(request, estrategia_id):
             tarea = every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_id)
             tareas_programadas[estrategia_id] = tarea
             cantidad = 0
-            for tarea in tareas_programadas:
+            for tareas in tareas_programadas:
                 cantidad += 1
-                print(f"{cantidad}. Tarea: {tarea}")
-            
+                print(f"{cantidad}. Tarea: {tareas}")
+
             # Inicia el hilo para ejecutar tareas programadas en segundo plano
             t = Thread(target=ejecutar_tareas_programadas)
             t.daemon = True
@@ -246,14 +261,13 @@ def ejecutar_codigo_python(request, estrategia_id):
 
             estrategia_usuario.ultima_ejecucion = datetime.now(timezone)
             estrategia_usuario.save()
+            print("Estrategias ejecutadas y programadas")
         except Exception as e:
             mensaje = f"Error al ejecutar el código: {str(e)}"
     else:
         mensaje = "La estrategia está inactiva."
 
     return JsonResponse({'mensaje': mensaje})
-
-
 
 # ======================= Funciones tareas segundo plano ====================
    
@@ -263,7 +277,6 @@ def ejecutar_tareas_programadas():
         run_pending()
         time.sleep(60)  # Espera 60 segundos antes de verificar nuevamente las tareas
         
-
 # Función para detener una tarea programada
 def detener_tarea_programada(estrategia_id):
     estrategia_id = int(estrategia_id)

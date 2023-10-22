@@ -2,16 +2,8 @@
 
 {% block content %}
 
-<div class="container">
-    <h2>Información de la cuenta</h2>
-    {% if account_info_df %}
-        <!-- TODO: Eliminar línea cuando se termine de obtener todos los datos {{ account_info_df | safe }} -->
-        <!-- {{ account_info_df | safe }} -->
-        <p>Saldo de la cuenta: ${{ saldo }}</p>
-    {% else %}
-        <p>No se pudo obtener información de la cuenta.</p>
-    {% endif %}
-</div>
+{% include 'operaciones_data/cuenta_info.html' %}
+<br>
 <div class="container">
     <form method="post">
         {% csrf_token %} {# Añade el token CSRF aquí #}
@@ -40,7 +32,7 @@
                         </td>
                     <td>
                         <a href="{% url 'editar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-warning">Editar</a>
-                        <a href="#" class="btn btn-danger">Eliminar</a>
+                        <a href="{% url 'eliminar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-danger">Eliminar</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -48,6 +40,8 @@
         </table>
     </form>
 </div>
+<br>
+{% include 'operaciones_data/lista_operaciones.html' %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
