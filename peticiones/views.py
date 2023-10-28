@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import PQRForm
 from .models import peticion
 
@@ -24,3 +24,9 @@ def crear_pqr(request):
     else:
         form = PQRForm()
     return render(request, 'crear_pqr.html', {'form': form})
+
+# ================== Formulario detalle PQR usuarios ==========================================
+@login_required
+def ver_detalle_pqr(request, pqr_id):
+    pqr = get_object_or_404(peticion, id=pqr_id, user=request.user)
+    return render(request, 'ver_detalle_pqr.html', {'pqr': pqr})

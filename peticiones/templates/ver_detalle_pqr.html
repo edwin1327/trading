@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">     
+                    <h2>Detalle de la PQR</h2>
+                    <div><strong>Tipo de Solicitud:</strong> {{ pqr.get_tipo_solicitud_display }}</div>
+                    <div><strong>Estado:</strong> {{ pqr.get_estado_display }}</div>
+                    <div><strong>Descripción:</strong> {{ pqr.descripcion }}</div>
+                    <div><strong>Fecha y Hora de Solicitud:</strong> {{ pqr.fecha_hora_solicitud }}</div>
+                    <div><strong>Fecha y Hora de Cierre:</strong> {{ pqr.fecha_hora_cierre }}</div>
+                    <br>
+                    <a href="{% url 'pqr_list' %}" class="btn btn-sm btn-primary">Volver al listado</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

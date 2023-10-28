@@ -20,7 +20,7 @@
                     <td>{{ pqr.get_estado_display }}</td>
                     <td>{{ pqr.fecha_hora_solicitud }}</td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-primary">Ver Detalle</a>
+                        <a href="{% url 'ver_detalle_pqr' pqr.id %}" class="btn btn-sm btn-primary">Ver Detalle</a>
                     </td>
                 </tr>
             {% empty %}
