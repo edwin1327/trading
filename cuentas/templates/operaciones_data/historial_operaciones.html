@@ -11,6 +11,7 @@
                     <th>Precio Apertura</th>
                     <th>Stop Loss</th>
                     <th>Take Profit</th>
+                    <th>Profit</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -24,17 +25,12 @@
                     <td>149.504</td>
                     <td>149.704</td>
                     <td>149.404</td>
+                    <td>$10.00</td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-primary">Detalle</a> | 
-                        <a href="#" class="btn btn-sm btn-danger">Cerrar</a>
+                        <a href="#" class="btn btn-sm btn-primary">Detalle</a>
                     </td>
                 </tr>
             </tbody>
         </table>
-        {% if account_info_df %}
-            <p>Saldo de la cuenta: ${{ saldo }}</p>
-        {% else %}
-            <p>No se pudo obtener información de la cuenta.</p>
-        {% endif %}
     </form>
 </div>

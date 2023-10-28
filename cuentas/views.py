@@ -11,7 +11,6 @@ from .forms import AgregarCuentaForm, AgregarEstrategiaForm, EditarCuentaForm, E
 from .models import Cuenta, Estrategia, Crear_Estrategia
 from schedule import every, run_pending, cancel_job
 import pytz, time
-from collections import defaultdict
 from functools import partial
 
 # ============== Entornos Globales ==================================
@@ -21,6 +20,26 @@ tareas_programadas = {}
 # Objeto datetime con información de zona horaria
 timezone = pytz.timezone("UTC")
 now = datetime.now(timezone)
+
+# Conexión a Metatrader
+def conexion_metaTrader(cuenta_id):
+
+    # Obtén la cuenta basada en el cuenta_id
+    datos_conexion = Cuenta.objects.get(id=cuenta_id)
+
+    conexion_mt5 = {
+            'path': 'C:\\Program Files\\RoboForex - MetaTrader 5\\terminal64.exe',
+            'login': datos_conexion.numero_cuenta,
+            'password': datos_conexion.pass_server,
+            'server': datos_conexion.server,
+            'timeout': 60000,
+            'portable': False
+        }
+
+    conexion = mt5.initialize(path=conexion_mt5['path'], login=conexion_mt5['login'], password=conexion_mt5['password'], server=conexion_mt5['server'], timeout=conexion_mt5['timeout'], portable=conexion_mt5['portable'])
+    print("Conexión exitosa a plataforma MT5")
+    return conexion
+
 
 # ====================== Lista de Cuentas Trading del Usuario =================
 @login_required
@@ -86,20 +105,10 @@ def estrategias(request):
 def operar_metatrader(request, cuenta_id):
     try:
         request.session['cuenta_id'] = cuenta_id
-        # Obtén la cuenta basada en el cuenta_id
-        datos_conexion = Cuenta.objects.get(id=cuenta_id)
-        conexion_mt5 = {
-            'path': 'C:\\Program Files\\RoboForex - MetaTrader 5\\terminal64.exe',
-            'login': datos_conexion.numero_cuenta,
-            'password': datos_conexion.pass_server,
-            'server': datos_conexion.server,
-            'timeout': 60000,
-            'portable': False
-        }
+        
+        conexion = conexion_metaTrader(cuenta_id)
 
-        if mt5.initialize(path=conexion_mt5['path'], login=conexion_mt5['login'], password=conexion_mt5['password'], server=conexion_mt5['server'], timeout=conexion_mt5['timeout'], portable=conexion_mt5['portable']):
-            print("Conexión exitosa a plataforma MT5")
-
+        if conexion:
             # Obtener información de la cuenta
             account_info_dict = mt5.account_info()._asdict()
             account_info_df = pd.DataFrame(account_info_dict, index=[0])
@@ -109,6 +118,9 @@ def operar_metatrader(request, cuenta_id):
 
             # Obtener estrategias asociadas a la cuenta actual
             estrategias_usuario = Crear_Estrategia.objects.filter(id_cuenta_id=cuenta_id)
+
+            # Realiza una consulta para obtener las operaciones activas
+            operaciones = mt5.positions_get()
 
 
             # Agregar el saldo y el DataFrame al contexto
@@ -120,6 +132,8 @@ def operar_metatrader(request, cuenta_id):
 
         else:
             print(f"Ha ocurrido un problema en la iniciación: {mt5.last_error()}")
+        # Cierra la conexión con MetaTrader5
+        mt5.shutdown()
 
         return render(request, 'operaciones.html', context)
     except Cuenta.DoesNotExist:
@@ -212,6 +226,7 @@ def cambiar_estado_estrategia(request):
 def ejecutar_codigo_python(request, estrategia_id):
     estrategia_usuario = Crear_Estrategia.objects.get(id=estrategia_id)
     estrategia = estrategia_usuario.id_estrategia
+    id_cuenta = estrategia_usuario.id_cuenta.id
     # Define un diccionario para el entorno
     context = {}
     # El estado debe estar activo antes de ejecutar el código
@@ -220,6 +235,7 @@ def ejecutar_codigo_python(request, estrategia_id):
             # Definir los argumentos que se pasarán a la función
             divisa = estrategia_usuario.divisa
             timeframe = estrategia_usuario.timeframe
+            conexion = conexion_metaTrader(id_cuenta)
             # Ejecuta el código Python almacenado en el campo codigo_python
             exec(estrategia.codigo_python, context)
 
@@ -247,6 +263,7 @@ def ejecutar_codigo_python(request, estrategia_id):
 
             # Programar la próxima ejecución
             estrategia_id = estrategia_usuario.id
+            print(f"estrategia: {estrategia_id}")
             tarea = every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_id)
             tareas_programadas[estrategia_id] = tarea
             cantidad = 0
@@ -262,6 +279,8 @@ def ejecutar_codigo_python(request, estrategia_id):
             estrategia_usuario.ultima_ejecucion = datetime.now(timezone)
             estrategia_usuario.save()
             print("Estrategias ejecutadas y programadas")
+
+            mt5.shutdown()
         except Exception as e:
             mensaje = f"Error al ejecutar el código: {str(e)}"
     else:
@@ -288,3 +307,42 @@ def detener_tarea_programada(estrategia_id):
         print(f"Tarea programada para {estrategia_id} fue cancelada y eliminada")
     else:
         print(f"No se encontró tarea programada para {estrategia_id}")
+
+# ======================= Funciones tareas segundo plano ====================
+
+def obtener_y_almacenar_operaciones(request):
+    
+    # Inicializa la conexión con MetaTrader5
+    mt5.initialize()
+
+    # Realiza una consulta para obtener las operaciones activas
+    operaciones = mt5.positions_get()
+    
+    # Cierra la conexión con MetaTrader5
+    mt5.shutdown()
+
+    # Filtra y almacena las operaciones válidas en la base de datos
+    for operacion in operaciones:
+        estrategia_nombre = operacion.comment
+        # Verifica si la estrategia es válida en tu base de datos
+        if Estrategia.objects.filter(nombre=estrategia_nombre).exists():
+            # Si la estrategia es válida, almacena la operación
+            nueva_operacion = operacion(
+                fecha=operacion.time,
+                id_cuenta=Cuenta.objects.get(id=1),  # Debes ajustar esto según tu lógica
+                estrategia=Estrategia.objects.get(nombre=estrategia_nombre),
+                ticket=operacion.ticket,
+                symbol=operacion.symbol,
+                tipo=operacion.type,
+                volume=operacion.volume,
+                precio_apertura=operacion.price_open,
+                stop_loss=operacion.sl,
+                take_profit=operacion.tp,
+            )
+            nueva_operacion.save()
+
+    # Obtén las operaciones almacenadas en la base de datos
+    operaciones_db = operacion.objects.all()
+
+    return render(request, 'tu_template.html', {'operaciones': operaciones_db})
+

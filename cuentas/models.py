@@ -51,3 +51,22 @@ class Crear_Estrategia(models.Model):
     def __str__(self):
         return self.nombre_estrategia
 
+class Operacion(models.Model):
+    TIPO_CHOICES = (
+        ('Buy', 'Buy'),
+        ('Sell', 'Sell'),
+    )
+
+    fecha = models.DateTimeField()
+    id_cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE)
+    estrategia = models.ForeignKey(Estrategia, on_delete=models.CASCADE)
+    ticket = models.IntegerField()
+    symbol = models.CharField(max_length=15)
+    tipo = models.CharField(max_length=4, choices=TIPO_CHOICES)
+    volume = models.DecimalField(max_digits=10, decimal_places=2)
+    precio_apertura = models.DecimalField(max_digits=10, decimal_places=2)
+    stop_loss = models.DecimalField(max_digits=10, decimal_places=2)
+    take_profit = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_cierre = models.DateTimeField()
+    precio_cierre = models.DecimalField(max_digits=10, decimal_places=2)
+    profit = models.DecimalField(max_digits=10, decimal_places=2)

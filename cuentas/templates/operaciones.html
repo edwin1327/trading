@@ -2,9 +2,9 @@
 
 {% block content %}
 
-{% include 'operaciones_data/cuenta_info.html' %}
 <br>
 <div class="container">
+    <h2>Lista de estrategias a operar</h2>
     <form method="post">
         {% csrf_token %} {# Añade el token CSRF aquí #}
         <table class="table table-striped">
@@ -14,7 +14,7 @@
                     <th>Divisa</th>
                     <th>Timeframe</th>
                     <th>Estado</th>
-                    <th>Acciones <a href="{% url 'crear_estrategia' %}" class="btn btn-sm btn-primary">Agregar Estrategia</a></th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,23 +25,24 @@
                     <td>{{ estrategia_usuario.timeframe }}</td>
                         <td>
                             {% if estrategia_usuario.estado %}
-                                <button type="checkbox" class="btn btn-success toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
+                                <button type="checkbox" class="btn btn-sm btn-success toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Activo</button>
                             {% else %}
-                                <button type="button" class="btn btn-danger toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Inactivo</button>
+                                <button type="button" class="btn btn-sm btn-danger toggle-estado" data-estrategia-id="{{ estrategia_usuario.id }}">Inactivo</button>
                             {% endif %}
                         </td>
                     <td>
-                        <a href="{% url 'editar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-warning">Editar</a>
-                        <a href="{% url 'eliminar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-danger">Eliminar</a>
+                        <a href="{% url 'editar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-sm btn-warning">Editar</a> | 
+                        <a href="{% url 'eliminar_estrategia' estrategia_id=estrategia_usuario.id %}" class="btn btn-sm btn-danger">Eliminar</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </form>
+    <a href="{% url 'crear_estrategia' %}" class="btn btn-sm btn-primary">Agregar Estrategia</a>
 </div>
 <br>
-{% include 'operaciones_data/lista_operaciones.html' %}
+{% include 'operaciones_data/tab_operaciones.html' %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
