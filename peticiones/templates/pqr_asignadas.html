@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Listado de PQR Asignadas</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tipo de Solicitud</th>
+                <th>Estado</th>
+                <th>Fecha y Hora de Solicitud</th>
+                <th>Usuario</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pqr in pqr_list %}
+            <tr>
+                <td>{{ pqr.get_tipo_solicitud_display }}</td>
+                <td>{{ pqr.get_estado_display }}</td>
+                <td>{{ pqr.fecha_hora_solicitud }}</td>
+                <td>{{ pqr.user.username }}</td> 
+                <td>
+                    <a href="{% url 'ver_detalle_pqr' pqr.id %}" class="btn btn-sm btn-primary">Gestionar Petición</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
