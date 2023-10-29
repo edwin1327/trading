@@ -17,13 +17,16 @@
             {% for pqr in pqr_list %}
             <tr>
                 <td>{{ pqr.get_tipo_solicitud_display }}</td>
-                <td>{{ pqr.get_estado_display }}</td>
                 <td>{{ pqr.fecha_hora_solicitud }}</td>
                 <td>{{ pqr.user.username }}</td> 
                 <td>
-                    <a href="{% url 'ver_detalle_pqr' pqr.id %}" class="btn btn-sm btn-primary">Gestionar Petición</a>
+                    <a href="{% url 'gestionar_pqr' pqr.id %}" class="btn btn-sm btn-primary">Gestionar Petición</a>
                 </td>
             </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No tienes peticiones asignadas.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

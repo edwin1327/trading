@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a href="{% url 'estrategias' %}" class="nav-link">Estrategias</a>
                     </li>
+                    {% if user.is_staff %}
+                        <a href="{% url 'pqr_asignadas' %}" class="nav-link">PQR's Asignadas</a>
+                    {% else %}                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">PQR's</a>
                         <ul class="dropdown-menu">
@@ -35,8 +38,7 @@
                           <li><a class="dropdown-item" href="{% url 'pqr_list' %}">Mis PQR</a></li>
                         </ul>
                     </li>
-                    {% if user.is_staff %}
-                        <a href="{% url 'pqr_asignadas' %}" class="nav-link">PQR's Asignadas</a>
+                    
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'salir' %}">Salir</a>

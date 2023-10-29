@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+<br>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Gestionar PQRs</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div><strong>usuario: </strong> {{ pqr.user }}</div>
+                        <div><strong>Tipo solicitud: </strong> {{ pqr.tipo_solicitud }}</div>
+                        <div><strong>Descripción:</strong></div>
+                        <div><p>{{ pqr.descripcion }}</p></div>
+                        <div><strong>Empleado Asignado: </strong> {{ pqr.empleado_asignado }}</div>
+                        
+                        
+                        <div class="container mt-2">
+                            <div class="card">
+                            <div class="me-2 card-body">
+                                <nav>
+                                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                      <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Cerrar PQR</button>
+                                      <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Asignar PQR</button>
+                                    </div>
+                                  </nav>
+                                  <div class="tab-content" id="nav-tabContent">
+                                    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                                        <div id="div-oculto" style="display: none;">
+                                            {{ form | crispy }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="{{ form.descripcion_cierre.id_for_label }}" class="my-2">Descripción de Cierre:</label>
+                                            {{ form.descripcion_cierre }}
+                                        </div>
+                                        <button type="submit" class="btn btn-success  mt-3" id="cerrar-peticion">Cerrar Petición</button>
+                                    </div>
+                                    <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                                        <div class="form-group">
+                                            <label for="{{ form.empleado_asignado.id_for_label }}" class="my-2">Asignar a:</label>
+                                            {{ form.empleado_asignado }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="{{ form.comentario_asignacion.id_for_label }}" class="my-2">Comentario de asignación:</label>
+                                            {{ form.comentario_asignacion }}
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mt-3" id="asignar-peticion">Asignar</button>
+                                    </div>
+                                  </div>
+                            </div>
+                          </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -3,9 +3,9 @@ from usuarios.models import User
 
 class peticion(models.Model):
     TIPOS_PQR = (
-        ('P', 'Petición'),
-        ('Q', 'Queja'),
-        ('R', 'Reclamo'),
+        ('Petición', 'Petición'),
+        ('Queja', 'Queja'),
+        ('Reclamo', 'Reclamo'),
     )
 
     ESTADOS_PQR = (
@@ -16,7 +16,7 @@ class peticion(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pqr_usuario')
-    tipo_solicitud = models.CharField(max_length=1, choices=TIPOS_PQR)
+    tipo_solicitud = models.CharField(max_length=8, choices=TIPOS_PQR)
     descripcion = models.TextField()
     fecha_hora_solicitud = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=ESTADOS_PQR, default='Radicado')

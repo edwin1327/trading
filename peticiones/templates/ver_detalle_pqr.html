@@ -13,6 +13,8 @@
                     <div><strong>Descripción:</strong> {{ pqr.descripcion }}</div>
                     <div><strong>Fecha y Hora de Solicitud:</strong> {{ pqr.fecha_hora_solicitud }}</div>
                     <div><strong>Fecha y Hora de Cierre:</strong> {{ pqr.fecha_hora_cierre }}</div>
+                    <div><strong>Descripción de Cierre:</strong></div>
+                    <div><p>{{ pqr.descripcion_cierre }}</p></div>
                     <br>
                     <a href="{% url 'pqr_list' %}" class="btn btn-sm btn-primary">Volver al listado</a>
                 </div>
