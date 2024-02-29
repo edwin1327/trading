@@ -197,6 +197,7 @@ def eliminar_estrategia(request, estrategia_id):
 
 # ======================= Cambiar estado de estrategia de Trading ====================
 
+
 @csrf_exempt
 def cambiar_estado_estrategia(request):
     if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
@@ -222,9 +223,9 @@ def cambiar_estado_estrategia(request):
         return JsonResponse({'error': 'Solicitud no válida'}, status=400)
 
 # ======================= Ejecutar estrategia de Trading ====================
-
-def ejecutar_codigo_python(request, estrategia_id):
-    estrategia_usuario = Crear_Estrategia.objects.get(id=estrategia_id)
+    
+# Función para ejecutar la estrategia de trading
+def ejecutar_estrategia(estrategia_usuario):
     estrategia = estrategia_usuario.id_estrategia
     id_cuenta = estrategia_usuario.id_cuenta.id
     # Define un diccionario para el entorno
@@ -238,55 +239,47 @@ def ejecutar_codigo_python(request, estrategia_id):
             conexion = conexion_metaTrader(id_cuenta)
             # Ejecuta el código Python almacenado en el campo codigo_python
             exec(estrategia.codigo_python, context)
-
             # Llama a la función con los argumentos
             context['implementar_estrategia'](divisa, timeframe)
             mensaje = "Código ejecutado exitosamente."
-
-            # Calcular el tiempo de espera antes de la próxima ejecución
-            intervalo = 60  # Predeterminado a 1 minuto
-            if estrategia_usuario.timeframe == '5M':
-                intervalo = 300  # 5 minutos
-            elif estrategia_usuario.timeframe == '15M':
-                intervalo = 900  # 15 minutos
-            elif estrategia_usuario.timeframe == '30M':
-                intervalo = 1800  # 30 minutos
-            elif estrategia_usuario.timeframe == '1H':
-                intervalo = 3600  # 1 hora
-            elif estrategia_usuario.timeframe == '4H':
-                intervalo = 14400  # 4 horas
-            elif estrategia_usuario.timeframe == '1D':
-                intervalo = 86400  # 1 día
-
-            # Define una función parcial que fija el parámetro request
-            partial_ejecutar_codigo_python = partial(ejecutar_codigo_python, request)
-
-            # Programar la próxima ejecución
-            estrategia_id = estrategia_usuario.id
-            print(f"estrategia: {estrategia_id}")
-            tarea = every(intervalo).seconds.do(partial_ejecutar_codigo_python, estrategia_id)
-            tareas_programadas[estrategia_id] = tarea
-            cantidad = 0
-            for tareas in tareas_programadas:
-                cantidad += 1
-                print(f"{cantidad}. Tarea: {tareas}")
-
-            # Inicia el hilo para ejecutar tareas programadas en segundo plano
-            t = Thread(target=ejecutar_tareas_programadas)
-            t.daemon = True
-            t.start()
-
-            estrategia_usuario.ultima_ejecucion = datetime.now(timezone)
-            estrategia_usuario.save()
-            print("Estrategias ejecutadas y programadas")
-
             mt5.shutdown()
         except Exception as e:
             mensaje = f"Error al ejecutar el código: {str(e)}"
     else:
         mensaje = "La estrategia está inactiva."
+    print(mensaje)
 
-    return JsonResponse({'mensaje': mensaje})
+def ejecutar_codigo_python(request, estrategia_id):
+    estrategia_usuario = Crear_Estrategia.objects.get(id=estrategia_id)
+    # Programar la ejecución de la estrategia según el intervalo correspondiente
+    if estrategia_usuario.timeframe == '1M':
+        tarea = every().minute.at(":00").do(partial(ejecutar_estrategia, estrategia_usuario))
+        tareas_programadas[estrategia_id] = tarea
+    elif estrategia_usuario.timeframe == '5M':
+        pass
+
+    elif estrategia_usuario.timeframe == '15M':
+        pass
+
+    elif estrategia_usuario.timeframe == '30M':
+        pass
+    elif estrategia_usuario.timeframe == '1H':
+        # Programar la ejecución de la estrategia cada hora, pero solamente en horas en punto
+        tarea = every().hour.at(":00").do(partial(estrategia_usuario))
+        tareas_programadas[estrategia_id] = tarea
+    elif estrategia_usuario.timeframe == '4H':
+        pass
+    elif estrategia_usuario.timeframe == '1D':
+        # Programar la ejecución de la estrategia cada hora, pero solamente en horas en punto
+        tarea = every().day.at("00:00").do(partial(estrategia_usuario))
+        tareas_programadas[estrategia_id] = tarea
+
+    # Actualizar el registro de la última ejecución de la estrategia
+    estrategia_usuario.ultima_ejecucion = datetime.now(timezone)
+    estrategia_usuario.save()
+
+    return JsonResponse({'mensaje': 'Estrategia programada correctamente'})
+
 
 # ======================= Funciones tareas segundo plano ====================
    
@@ -294,7 +287,12 @@ def ejecutar_codigo_python(request, estrategia_id):
 def ejecutar_tareas_programadas():
     while True:
         run_pending()
-        time.sleep(60)  # Espera 60 segundos antes de verificar nuevamente las tareas
+        time.sleep(1)  # Verificar las tareas pendientes cada segundo
+
+# Iniciar el hilo para ejecutar tareas programadas en segundo plano
+t = Thread(target=ejecutar_tareas_programadas)
+t.daemon = True
+t.start()
         
 # Función para detener una tarea programada
 def detener_tarea_programada(estrategia_id):

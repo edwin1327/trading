@@ -56,21 +56,7 @@
         });
     }
 
-    function ejecutarCodigoPythonEstrategiasActivas() {
-        // Obtener todas las estrategias con estado 'Activo'
-        var estrategiasActivas = $('.toggle-estado.btn-success');
-
-        estrategiasActivas.each(function() {
-            var button = $(this);
-            var estrategiaId = button.data('estrategia-id');
-            ejecutarCodigoPython(estrategiaId);
-        });
-    }
-
     $(document).ready(function() {
-
-        // Ejecutar el código de estrategias activas al cargar la página
-        ejecutarCodigoPythonEstrategiasActivas();
 
         $('.toggle-estado').on('click', function() {
             var button = $(this);  // Guarda una referencia al botón actual
@@ -91,8 +77,6 @@
                     // Cambia el estado en la interfaz según la respuesta
                     if (response.estado === true) {
                         button.text('Activo').removeClass('btn-danger').addClass('btn-success');
-                        // Ejecutar el código Python
-                        ejecutarCodigoPython(estrategiaId);
                     } else {
                         button.text('Inactivo').removeClass('btn-success').addClass('btn-danger');
                     }
