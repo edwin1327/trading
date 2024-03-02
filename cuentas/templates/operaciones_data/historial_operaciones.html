@@ -1,4 +1,5 @@
 <div class="container">
+    {{ historicos | safe }}
     <form method="post">
         <table class="table table-striped">
             <thead>
@@ -9,27 +10,27 @@
                     <th>Tipo</th>
                     <th>Volume</th>
                     <th>Precio Apertura</th>
-                    <th>Stop Loss</th>
-                    <th>Take Profit</th>
+                    <th>Precio Cierre</th>
                     <th>Profit</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                {% for historico in historicos %}
                 <tr>
-                    <td>2023.09.28 04:33:52</td>
-                    <td>461250917</td>
-                    <td>usdjpy</td>
-                    <td>buy</td>
-                    <td>0.01</td>
-                    <td>149.504</td>
-                    <td>149.704</td>
-                    <td>149.404</td>
-                    <td>$10.00</td>
+                    <td>{{ operacion.time }}</td>
+                    <td>{{ operacion.ticket }}</td>
+                    <td>{{ operacion.symbol }}</td>
+                    <td>{{ operacion.type|yesno:"Sell,Buy" }}</td>
+                    <td>{{ operacion.volume }}</td>
+                    <td>{{ operacion.price_open }}</td>
+                    <td>{{ operacion.price_close }}</td>
+                    <td>{{ operacion.profit }}</td>
                     <td>
                         <a href="#" class="btn btn-sm btn-primary">Detalle</a>
                     </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </form>

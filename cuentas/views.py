@@ -122,12 +122,16 @@ def operar_metatrader(request, cuenta_id):
             # Realiza una consulta para obtener las operaciones activas
             operaciones = mt5.positions_get()
 
+            # Realiza una consulta para obtener las operaciones cerradas
+            historicos = mt5.history_orders_get()
 
             # Agregar el saldo y el DataFrame al contexto
             context = {
                 'account_info_df': account_info_df.to_html(classes='table table-bordered table-hover'),
                 'saldo': saldo,
                 'estrategias_usuario': estrategias_usuario,
+                'operaciones': operaciones,
+                'historicos': historicos,
             }
 
         else:

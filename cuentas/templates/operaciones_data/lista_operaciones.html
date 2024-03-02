@@ -15,20 +15,21 @@
                 </tr>
             </thead>
             <tbody>
+                {% for operacion in operaciones %}
                 <tr>
-                    <td>2023.09.28 04:33:52</td>
-                    <td>461250917</td>
-                    <td>usdjpy</td>
-                    <td>buy</td>
-                    <td>0.01</td>
-                    <td>149.504</td>
-                    <td>149.704</td>
-                    <td>149.404</td>
+                    <td>{{ operacion.time }}</td>
+                    <td>{{ operacion.ticket }}</td>
+                    <td>{{ operacion.symbol }}</td>
+                    <td>{{ operacion.type|yesno:"Sell,Buy" }}</td>
+                    <td>{{ operacion.volume }}</td>
+                    <td>{{ operacion.price_open }}</td>
+                    <td>{{ operacion.sl }}</td>
+                    <td>{{ operacion.tp }}</td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-primary">Detalle</a> | 
                         <a href="#" class="btn btn-sm btn-danger">Cerrar</a>
                     </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
         {% if account_info_df %}
